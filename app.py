@@ -78,5 +78,38 @@ def add_users():
             return 'Something went wrong'
 
 
+@app.route('/create_room', methods=['POST'])
+def new_room():
+    if request.method == 'POST':
+        r_name = request.json['r_name']
+        created_by = request.json['created_by']
+        r_description = request.json['r_description']
+
+        u_info = Users.query.filter_by(name=created_by).first()
+        if u_info:
+            r_info = Room.query.filter_by(r_name=r_name).first()
+            if r_info:
+                return jsonify(
+                    {
+                        "STATUS": 406,
+                        "MESSAGE": "ROOM NAME ALREADY TAKEN, PLEASE CHANGE ROOM NAME"
+                    }
+                )
+            else:
+                room = Room(r_name=r_name, created_by=created_by, date_time=str(datetime.datetime.now()),
+                            r_description=r_description)
+                db.session.add(room)
+                db.session.commit()
+                return jsonify({'message': 'successfully created room', 'Room_id': room.id, 'created_by': room.created_by,
+                                'Status_code': 200})
+        else:
+            return jsonify(
+                {
+                    "status" : 400,
+                    'MESSAGE' : 'CREATOR DOES NOT EXIST IN USER TABLE'
+                }
+            )
+
+
 if __name__ == '__main__':
     app.run(debug=True)
