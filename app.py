@@ -30,9 +30,8 @@ def add_users():
                 db.session.commit()
 
             r_name = request.json['r_name']
-            room = Room(r_name=r_name)
-            room.created_by = new_user.id
-            room.date_time = str(datetime.datetime.now())
+            r_description = request.json['r_description']
+
             exists = Room.query.filter_by(r_name=r_name).first()
             if exists:
                 return jsonify(
@@ -42,6 +41,7 @@ def add_users():
                     }
                 )
             else:
+                room = Room(r_name=r_name, created_by=new_user.id, date_time=str(datetime.datetime.now()), r_description=r_description)
                 db.session.add(room)
                 db.session.commit()
                 return jsonify({'message': 'successfully created user', 'Room_id': room.id, 'Status_code': 200})
