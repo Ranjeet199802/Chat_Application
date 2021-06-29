@@ -14,23 +14,15 @@ def add_users():
             email = request.json['email']
             phone_no = request.json['phone_no']
             city = request.json['city']
+            r_name = request.json['r_name']
+            r_description = request.json['r_description']
             found = Users.query.filter_by(email=email).first()
-            found1 = Users.query.filter_by(phone_no=phone_no).first()
-            if found or found1:
-                return jsonify(
-                    {
-                        "status": 400,
-                        "MESSAGE": "USER ALREADY EXISTS"
-                    }
-                )
+            if found:
+                user_id = found.id
             else:
-
                 new_user = Users(name=name, email=email, phone_no=phone_no, city=city)
                 db.session.add(new_user)
                 db.session.commit()
-
-            r_name = request.json['r_name']
-            r_description = request.json['r_description']
 
             exists = Room.query.filter_by(r_name=r_name).first()
             if exists:
@@ -41,7 +33,8 @@ def add_users():
                     }
                 )
             else:
-                room = Room(r_name=r_name, created_by=new_user.id, date_time=str(datetime.datetime.now()), r_description=r_description)
+                room = Room(r_name=r_name, created_by=new_user.id, date_time=str(datetime.datetime.now()),
+                            r_description=r_description)
                 db.session.add(room)
                 db.session.commit()
                 return jsonify({'message': 'successfully created user', 'Room_id': room.id, 'Status_code': 200})
