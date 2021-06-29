@@ -12,32 +12,40 @@ def add_users():
         if request.method == 'POST':
             name = request.json['name']
             email = request.json['email']
-            check = Users.query.filter_by(email=email).first()
-            if check:
-                return "Email already taken, please try another one"
+            phone_no = request.json['phone_no']
+            city = request.json['city']
+            found = Users.query.filter_by(email=email).first()
+            found1 = Users.query.filter_by(phone_no=phone_no).first()
+            if found or found1:
+                return jsonify(
+                    {
+                        "status": 400,
+                        "MESSAGE": "USER ALREADY EXISTS"
+                    }
+                )
             else:
-                phone_no = request.json['phone_no']
-                found = Users.query.filter_by(phone_no=phone_no).first()
-                if found:
-                    return "Phone_no already exixts"
-                else:
-                    city = request.json['city']
 
-            new_user = Users(name=name, email=email, phone_no=phone_no, city=city)
-            db.session.add(new_user)
-            db.session.commit()
+                new_user = Users(name=name, email=email, phone_no=phone_no, city=city)
+                db.session.add(new_user)
+                db.session.commit()
 
-            room = Room(r_name='groupc')
-            exists = Room.query.filter_by(r_name=room.r_name).first()
+            r_name = request.json['r_name']
+            room = Room(r_name=r_name)
+            room.created_by = new_user.id
+            room.date_time = str(datetime.datetime.now())
+            exists = Room.query.filter_by(r_name=r_name).first()
             if exists:
-                return "Room with same name alredy exists, please change room name"
+                return jsonify(
+                    {
+                        "STATUS": 406,
+                        "MESSAGE": "ROOM NAME ALREADY TAKEN, PLEASE CHANGE ROOM NAME"
+                    }
+                )
             else:
-                room.created_by = new_user.id
-                room.date_time = str(datetime.datetime.now())
+                db.session.add(room)
+                db.session.commit()
+                return jsonify({'message': 'successfully created user', 'Room_id': room.id, 'Status_code': 200})
 
-            db.session.add(room)
-            db.session.commit()
-            return jsonify({'message': 'successfully created user', 'Room_id': room.id, 'Status_code': 200})
     except Exception as e:
         return 'found error,somthing went wrong'
 
