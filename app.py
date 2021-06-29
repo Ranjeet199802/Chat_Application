@@ -21,9 +21,9 @@ def add_users():
                 user_id = found.id
             else:
                 new_user = Users(name=name, email=email, phone_no=phone_no, city=city)
-                user_id = new_user.id
                 db.session.add(new_user)
                 db.session.commit()
+                user_id = new_user.id
 
             exists = Room.query.filter_by(r_name=r_name).first()
             if exists:
