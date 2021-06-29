@@ -21,6 +21,7 @@ def add_users():
                 user_id = found.id
             else:
                 new_user = Users(name=name, email=email, phone_no=phone_no, city=city)
+                user_id = new_user.id
                 db.session.add(new_user)
                 db.session.commit()
 
@@ -33,7 +34,7 @@ def add_users():
                     }
                 )
             else:
-                room = Room(r_name=r_name, created_by=new_user.id, date_time=str(datetime.datetime.now()),
+                room = Room(r_name=r_name, created_by=user_id, date_time=str(datetime.datetime.now()),
                             r_description=r_description)
                 db.session.add(room)
                 db.session.commit()
