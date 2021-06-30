@@ -100,13 +100,60 @@ def new_room():
                             r_description=r_description)
                 db.session.add(room)
                 db.session.commit()
-                return jsonify({'message': 'successfully created room', 'Room_id': room.id, 'created_by': room.created_by,
-                                'Status_code': 200})
+                return jsonify(
+                    {'message': 'successfully created room', 'Room_id': room.id, 'created_by': room.created_by,
+                     'Status_code': 200})
         else:
             return jsonify(
                 {
-                    "status" : 400,
-                    'MESSAGE' : 'CREATOR DOES NOT EXIST IN USER TABLE'
+                    "status": 400,
+                    'MESSAGE': 'CREATOR DOES NOT EXIST IN USER TABLE'
+                }
+            )
+
+
+@app.route('/get_room', methods=['GET'])
+def roominfo():
+    if request.method == 'GET':
+        try:
+            room_id = request.args.get('room_id')
+            if not room_id:
+                r_list = []
+                table = Room.query.all()
+                for info in table:
+                    r_list.append(
+                        {
+                            'Room_id': info.id,
+                            'Room_name': info.r_name,
+                            'Date': info.date_time,
+                            'Created_by': info.created_by,
+                            'R_disciption': info.r_description
+
+                        }
+                    )
+                return jsonify(r_list)
+
+            exists = Room.query.filter_by(id=room_id).first()
+            if exists:
+                return jsonify(
+                    {
+                        'Room_id': exists.id,
+                        'Room_name': exists.r_name,
+                        'Created_by': exists.created_by,
+                        'R_disciption': exists.r_description,
+                        'Date': exists.date_time
+                    }
+                )
+            if not exists:
+                return jsonify(
+                    {
+                        "MESSAGE": "NO ROOM AVAILABLE WITH THIS ID"
+                    }
+                )
+        except Exception as e:
+            return jsonify(
+                {
+                    "MESSAGE": "SOMETHING WENT WRONG"
                 }
             )
 
