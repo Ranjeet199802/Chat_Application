@@ -50,7 +50,28 @@ def getroom():
 
         try:
             data = request.args.get('r_id')
-            if not data:
+
+            if data:
+                exists = Room.query.filter_by(id=data).first()
+                if exists:
+                    return jsonify(
+                        {
+                            'Room_id': exists.id,
+                            'Room_name': exists.r_name,
+                            'Date': exists.date_time,
+                            'Created_by': exists.created_by,
+                            'r_Discription': exists.r_description
+                        }
+                    )
+                else:
+                    return jsonify(
+                        {
+                            'MESSAGE': "NO ROOM AVAILABLE WITH THIS ID"
+                        }
+                    )
+
+            else:
+
                 r_list = []
                 table = Room.query.all()
                 for rinfo in table:
@@ -65,24 +86,6 @@ def getroom():
                         }
                     )
                 return jsonify(r_list)
-
-            exists = Room.query.filter_by(id=data).first()
-            if exists:
-                return jsonify(
-                    {
-                        'Room_id': exists.id,
-                        'Room_name': exists.r_name,
-                        'Date': exists.date_time,
-                        'Created_by': exists.created_by,
-                        'r_Discription': exists.r_description
-                    }
-                )
-            else:
-                return jsonify(
-                    {
-                        'MESSAGE': "NO ROOM AVAILABLE WITH THIS ID"
-                    }
-                )
 
         except Exception as e:
             return 'Something went wrong'
