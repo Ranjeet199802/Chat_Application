@@ -71,11 +71,18 @@ def getroom():
                 return jsonify(
                     {
                         'Room_id': exists.id,
-                        'Room_name': exists.r_name
+                        'Room_name': exists.r_name,
+                        'Date': exists.date_time,
+                        'Created_by': exists.created_by,
+                        'r_Discription': exists.r_description
                     }
                 )
-            if not exists:
-                return "no room exits with this id"
+            else:
+                return jsonify(
+                    {
+                        'MESSAGE': "NO ROOM AVAILABLE WITH THIS ID"
+                    }
+                )
 
         except Exception as e:
             return 'Something went wrong'
