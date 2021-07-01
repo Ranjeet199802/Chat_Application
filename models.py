@@ -32,6 +32,7 @@ class Users(db.Model):
     phone_no = db.Column(db.Integer, unique=True, nullable=False)
     city = db.Column(db.String(80), nullable=False)
     rooms = db.relationship('Room', backref='users')
+    room_members = db.relationship('room_member', backref='users')
     # associations = db.relationship("Room", secondary=associations, backref=db.backref('creator', lazy=True))
 
 
@@ -41,6 +42,13 @@ class Room(db.Model):
     date_time = db.Column(db.String(120))
     created_by = db.Column(db.String(200), db.ForeignKey('users.id'), nullable=False)
     r_description = db.Column(db.String(200), nullable=True)
+    room_memberss = db.relationship('room_member')
+
+
+class room_member(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    uid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    Rid = db.Column(db.Integer, db.ForeignKey(Room.id), nullable=False)
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@ import datetime
 from flask import Flask, request, jsonify, json
 from sqlalchemy.exc import IntegrityError
 
-from models import db, Users, Room, app
+from models import db, Users, Room, app, room_member
 
 
 @app.route('/create_room', methods=['POST'])
@@ -89,6 +89,63 @@ def getroom():
 
         except Exception as e:
             return 'Something went wrong'
+
+
+@app.route('/create_user', methods=['POST'])
+def createuser():
+    if request.method == 'POST':
+        aid = request.json['Aid']
+        rid = request.json['Rid']
+        name = request.json['name']
+        email = request.json['email']
+        phone_no = request.json['phone_no']
+        city = request.json['city']
+
+        exist = Room.query.filter_by(id=rid).first()
+
+        if exist:
+
+            admin = exist.created_by
+
+            if admin == aid:
+
+                check = Users.query.filter_by(email=email).first()
+
+                if check:
+
+                    userid = check.id
+
+                else:
+
+                    add = Users(name=name, email=email, phone_no=phone_no, city=city)
+                    db.session.add(add)
+                    db.session.commit()
+                    userid = add.id
+
+                new = room_member(uid=userid, Rid=rid)
+                db.session.add(new)
+                db.session.commit()
+
+                return jsonify(
+                    {
+                        "Message": "user added",
+                        "user_id": new.id,
+                        "room_ id": rid
+                    }
+                )
+
+            else:
+                return jsonify(
+                    {
+                        "message": "unauthorised access"
+                    }
+                )
+        else:
+            return jsonify(
+                {
+                    "message": "no room available with this id"
+                }
+            )
 
 
 if __name__ == '__main__':
