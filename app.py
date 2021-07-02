@@ -91,61 +91,167 @@ def getroom():
             return 'Something went wrong'
 
 
-@app.route('/create_user', methods=['POST'])
-def createuser():
-    if request.method == 'POST':
-        aid = request.json['Aid']
-        rid = request.json['Rid']
-        name = request.json['name']
-        email = request.json['email']
-        phone_no = request.json['phone_no']
-        city = request.json['city']
+@app.route('/add_members', methods=['POST'])
+def add_members():
+    try:
+        if request.method == 'POST':
+            aid = request.json['Aid']
+            rid = request.json['Rid']
+            name = request.json['name']
+            email = request.json['email']
+            phone_no = request.json['phone_no']
+            city = request.json['city']
 
-        exist = Room.query.filter_by(id=rid).first()
+            exist = Room.query.filter_by(id=rid).first()
 
-        if exist:
+            if exist:
 
-            admin = exist.created_by
+                admin = exist.created_by
 
-            if admin == aid:
+                if admin == aid:
 
-                check = Users.query.filter_by(email=email).first()
+                    check = Users.query.filter_by(email=email).first()
 
-                if check:
+                    if check:
 
-                    userid = check.id
+                        userid = check.id
+
+                    else:
+
+                        add = Users(name=name, email=email, phone_no=phone_no, city=city)
+                        db.session.add(add)
+                        db.session.commit()
+                        userid = add.id
+
+                    new = room_member(uid=userid, Rid=rid)
+                    db.session.add(new)
+                    db.session.commit()
+
+                    return jsonify(
+                        {
+                            "Message": "user added",
+                            "user_id": new.id,
+                            "room_ id": rid,
+                            "usertable_id": new.uid
+                        }
+                    )
 
                 else:
-
-                    add = Users(name=name, email=email, phone_no=phone_no, city=city)
-                    db.session.add(add)
-                    db.session.commit()
-                    userid = add.id
-
-                new = room_member(uid=userid, Rid=rid)
-                db.session.add(new)
-                db.session.commit()
-
-                return jsonify(
-                    {
-                        "Message": "user added",
-                        "user_id": new.id,
-                        "room_ id": rid
-                    }
-                )
-
+                    return jsonify(
+                        {
+                            "message": "unauthorised access"
+                        }
+                    )
             else:
                 return jsonify(
                     {
-                        "message": "unauthorised access"
+                        "message": "no room available with this id"
                     }
                 )
-        else:
-            return jsonify(
-                {
-                    "message": "no room available with this id"
-                }
-            )
+
+    except Exception as e:
+        return jsonify(
+            {
+                "Message": "something went wrong"
+            }
+        )
+
+
+@app.route('/update', methods=['PUT'])
+def update():
+    try:
+        if request.method == 'PUT':
+
+            roomid = request.json['roomid']
+            created_by = request.json['created_by']
+
+            name = request.json['room_name']
+            discription = request.json['discription']
+            removeid = request.json['remove_id']
+
+            match = Room.query.filter_by(id=roomid).first()
+
+            if match:
+                if match.created_by == created_by:
+                    if name == "" and discription == "" and removeid == "":
+                        return jsonify(
+                            {
+
+                                "message": "please input data"
+                            }
+                        )
+
+                    elif name and discription and removeid:
+                        match.r_name = name
+                        match.r_description = discription
+                        db.session.commit()
+
+                        req_data = room_member.query.filter_by(Rid=roomid, uid=removeid).first()
+                        if req_data:
+                            Users.query.filter_by(id=removeid).delete()
+                            db.session.delete(req_data)
+                            db.session.commit()
+                        else:
+                            return "data not found in room to delet user"
+
+
+                    elif name and discription == "" and removeid == "":
+                        match.r_name = name
+                        db.session.commit()
+
+                    elif name == "" and discription and removeid == "":
+                        match.r_description = discription
+                        db.session.commit()
+
+                    elif name == "" and discription == "" and removeid:
+                        req_data = room_member.query.filter_by(Rid=roomid, uid=removeid).first()
+                        if req_data:
+                            Users.query.filter_by(id=removeid).delete()
+                            db.session.delete(req_data)
+                            db.session.commit()
+                        else:
+                            return "data not found in room to delet user"
+
+                    elif name and discription and removeid == "":
+                        match.r_name = name
+                        match.r_description = discription
+                        db.session.commit()
+
+                    elif name and discription == "" and removeid:
+                        match.r_name = name
+                        db.session.commit()
+                        req_data = room_member.query.filter_by(Rid=roomid, uid=removeid).first()
+                        if req_data:
+                            Users.query.filter_by(id=removeid).delete()
+                            db.session.delete(req_data)
+                            db.session.commit()
+                        else:
+                            return "data not found in room to delet user"
+
+                    elif name == "" and discription and removeid:
+                        match.r_description = discription
+                        db.session.commit()
+                        req_data = room_member.query.filter_by(Rid=roomid, uid=removeid).first()
+                        if req_data:
+                            Users.query.filter_by(id=removeid).delete()
+                            db.session.delete(req_data)
+                            db.session.commit()
+                        else:
+                            return "data not found in room to delet user"
+
+                    return jsonify(
+                        {
+                            "MESSAGE": "DATA IS SUCCEFULLY UPDATED"
+                        }
+                    )
+                else:
+                    return " admin not match to the Room id"
+
+            else:
+                return "no room found with this id"
+
+    except Exception as e:
+        return "something went wrong"
 
 
 if __name__ == '__main__':
