@@ -3,7 +3,7 @@ import datetime
 from flask import Flask, request, jsonify, json
 from sqlalchemy.exc import IntegrityError
 
-from models import db, Users, Room, app, room_member
+from models import db, Users, Room, app, room_member, messages
 
 
 @app.route('/create_room', methods=['POST'])
@@ -249,6 +249,43 @@ def update():
 
             else:
                 return "no room found with this id"
+
+    except Exception as e:
+        return "something went wrong"
+
+
+@app.route('/message', methods=['POST'])
+def message():
+    try:
+
+        if request.method == 'POST':
+
+            text = request.json['text']
+            senderid = request.json['senderid']
+            receiverid = request.json['receiverid']
+
+            req_data = Users.query.filter_by(id=senderid).first()
+            req_data1 = Users.query.filter_by(id=receiverid).first()
+
+            if req_data and req_data1:
+                store = messages(text=text, sender=senderid, receiver=receiverid, time=str(datetime.datetime.now()))
+                db.session.add(store)
+                db.session.commit()
+
+                return jsonify(
+                    {
+                        "message": "message stored succefully"
+                    }
+                )
+
+            else:
+                return jsonify(
+                    {
+                        "error": "reciver_id or sender_id does not match with user table"
+                    }
+                )
+
+
 
     except Exception as e:
         return "something went wrong"

@@ -33,6 +33,7 @@ class Users(db.Model):
     city = db.Column(db.String(80), nullable=False)
     rooms = db.relationship('Room', backref='users')
     room_members = db.relationship('room_member', backref='users')
+    message = db.relationship('messages', backref='users')
     # associations = db.relationship("Room", secondary=associations, backref=db.backref('creator', lazy=True))
 
 
@@ -49,6 +50,14 @@ class room_member(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     uid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     Rid = db.Column(db.Integer, db.ForeignKey(Room.id), nullable=False)
+
+
+class messages(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    receiver = db.Column(db.Integer, nullable=False)
+    text = db.Column(db.String(300), nullable=True)
+    time = db.Column(db.String(100), nullable=False)
 
 
 if __name__ == '__main__':
